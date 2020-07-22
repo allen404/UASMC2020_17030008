@@ -1,15 +1,15 @@
 package id.mobilecomputing.uasmc2020;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.widget.Toast;
@@ -30,26 +30,52 @@ public class MainActivity extends AppCompatActivity {
 
         rvContacts = (RecyclerView) findViewById(R.id.recViewContacts);
 
-        getAllContacts();
+        getAllContactsWrapper();
     }
 
+    private void getAllContactsWrapper(){
+        int hasReadContactPermission = checkSelfPermission(Manifest.permission.READ_CONTACTS);
+        if (hasReadContactPermission != PackageManager.PERMISSION_GRANTED){
+            if(!shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)){
+                showMessageOKCancel("Izin akses kontak harus diberikan untuk menggunakan aplikasi", new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        requestPermissions(new String[] {Manifest.permission.READ_CONTACTS},PERMISSIONS_REQUEST_READ_CONTACTS);
+                    }
+                });
+                return;
+            }
+            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
+            return;
+        }
+        getAllContacts();
+    }
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener){
+        new AlertDialog.Builder(MainActivity.this)
+                .setMessage(message)
+                .setPositiveButton("OK",okListener)
+                .setNegativeButton("Cancel",null)
+                .create()
+                .show();
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if(requestCode == PERMISSIONS_REQUEST_READ_CONTACTS){
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                getAllContacts();
-            }
-        }else{
-            Toast.makeText(this, "Izin akses kontak harus di izinkan terlebih dahulu", Toast.LENGTH_SHORT).show();
+        switch (requestCode){
+            case PERMISSIONS_REQUEST_READ_CONTACTS:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    getAllContacts();
+                }else{
+                    Toast.makeText(MainActivity.this,"Permission READ_CONTACTS Ditolak",Toast.LENGTH_LONG).show();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
     private void getAllContacts(){
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED){
-            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
-        }
 
         List<ContactsGetSet> contactsGetSetList = new ArrayList();
         ContactsGetSet contactsGetSet;
