@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -32,7 +31,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.Contac
     public void onBindViewHolder(ContactViewHolder holder, int position) {
         ContactsGetSet contactsGetSet = contactsGetSetList.get(position);
         holder.tv_ContactName.setText(contactsGetSet.getContactName());
-        holder.tv_ContactNumber.setText(contactsGetSet.getContactNumber());
+        holder.tv_ContactNumber.setText((CharSequence) contactsGetSet.getContactNumber());
     }
 
     @Override
